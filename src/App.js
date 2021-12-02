@@ -21,6 +21,9 @@ function App() {
 
   const [renderData, setRenderData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+  const [contractSymbol, setContractSymbol] = useState('');
+
   const TableWrapper = styled.div`
     max-height: 85vh;
     overflow-y: auto;
@@ -71,18 +74,25 @@ function App() {
     }
   `
   
-  // const api = base_api + chainId.bsc + "/tokens/" + lock_tao_addr + "/token_holders/?block-height="+end_block+"&key=" + api_key;
+  const api = base_api + chainId.bsc + "/tokens/" + lock_tao_addr + "/token_holders/?block-height="+end_block+"&page-size="+1000+"&key=" + api_key;
   
   const api_2_blocks = base_api + chainId.bsc + "/tokens/" + lock_tao_addr + "/token_holders_changes/?starting-block="+start_block+"&ending-block="+end_block+"&page-size="+1000+"&key=" + api_key;
 
   const getHolderData = async () => {
       setLoading(true);
-      await axios.get(api_2_blocks).then((res) => {
+      await axios.get(api).then((res) => {
         const res_data = res.data;
         if(res_data) {
           console.log("====res::", res_data.data.items);          
-          setRenderData(res_data.data.items);
+          const temp = [];
+          res_data.data.items.map((item, i) => {
+            const r_d = {'holder': item.address, 'amount': item.balance, 'decimals': item.contract_decimals};
+            temp.push(r_d);
+            setContractSymbol(item.contract_ticker_symbol)
+          });
+          setRenderData(temp);
           setLoading(false);
+          setTotalCount(res_data.data.pagination.total_count)
         }
       }).catch((err) => {
           console.log("====err::", err);
@@ -111,6 +121,10 @@ function App() {
                 Get Holder Data
             </ButtonSecondary>
         </div>
+        <div className="total_div">
+          <label>Total Holders: {totalCount}</label>
+          <label>{contractSymbol}</label>
+        </div>
         <TableWrapper>          
           <table>
             <thead>
@@ -126,8 +140,8 @@ function App() {
                 return (
                   <tr key={i}>
                       <td width="10%">{num}</td>
-                      <td width="60%">{item.token_holder}</td>
-                      <td width="30%">{item.next_balance}</td>
+                      <td width="60%">{item.holder}</td>
+                      <td width="30%">{item.amount}</td>
                   </tr>
                 )
               })}

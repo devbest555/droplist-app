@@ -35,6 +35,16 @@
 .btn_div {
   margin-top: 50px;
   margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.total_div {
+  width: 60vw;
+  display: flex;
+  justify-content: space-between;
+  font-weight: bolder;
+  font-size: larger;  
 }
 
 .App-link {
